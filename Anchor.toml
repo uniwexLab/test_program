@@ -1,0 +1,25 @@
+[toolchain]
+package_manager = "yarn"
+anchor_version = "0.31.1"
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+test_program = "GZzqLG5WuHm9fipCh5PsEyo841F7Kbz9YvNRYynQQY2Z"
+
+[programs.devnet]
+test_program = "GZzqLG5WuHm9fipCh5PsEyo841F7Kbz9YvNRYynQQY2Z"
+
+[programs.mainnet]
+test_program = "GZzqLG5WuHm9fipCh5PsEyo841F7Kbz9YvNRYynQQY2Z"
+
+[provider]
+cluster = "mainnet"
+wallet = "~/.config/solana/id.json"
+
+[test]
+startup_wait = 10000
+validator = { url = "http://localhost:8890", faucet = "http://localhost:9901" }
+

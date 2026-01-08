@@ -1,0 +1,10 @@
+target/
+node_modules/
+.git/
+*.so
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+

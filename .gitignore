@@ -1,0 +1,36 @@
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+Cargo.lock.bak
+
+# Solana
+*.so
+*.keypair.json
+*.json.keypair
+target/deploy/*.json
+!target/deploy/*-keypair.json
+
+# Node
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
