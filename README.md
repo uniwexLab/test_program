@@ -28,7 +28,7 @@ curl -X POST https://verify.osec.io/verify \
   -d '{
     "repository": "https://github.com/uniwexLab/test_program",
     "program_id": "GZzqLG5WuHm9fipCh5PsEyo841F7Kbz9YvNRYynQQY2Z",
-    "commit_hash": "REPLACE_WITH_COMMIT",
+    "commit_hash": "d2cf28f92d64a5ccefe4af6761fe844e1aef59b9",
     "lib_name": "test_program"
   }'
 ```
