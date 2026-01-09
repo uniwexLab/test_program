@@ -20,7 +20,7 @@ custom-heap = []
 custom-panic = []
 
 [dependencies]
-anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
+anchor-lang = { version = "0.32.1", features = ["init-if-needed"] }
 solana-program = "2.3.0"
 # Pin indexmap to version compatible with rustc 1.79.0 (used in anchor build --verifiable Docker)
 indexmap = "=2.0.0"
