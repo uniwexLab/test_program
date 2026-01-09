@@ -20,6 +20,13 @@ pub mod test_program {
         msg!("Subtracting {} - {} = {}", a, b, result);
         Ok(result)
     }
+    
+    /// Simple multiplication function
+    pub fn multiply(ctx: Context<Add>, a: u64, b: u64) -> Result<u64> {
+        let result = a.checked_mul(b).ok_or(ErrorCode::Overflow)?;
+        msg!("Multiplying {} * {} = {}", a, b, result);
+        Ok(result)
+    }
 }
 
 #[derive(Accounts)]
