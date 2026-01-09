@@ -104,36 +104,54 @@ async function checkPrerequisites() {
 async function buildProgram() {
   logSection('Building Program');
   
-  logInfo('Building program with Anchor...');
-  logInfo('Note: OtterSec will rebuild in their Docker container for verification');
+  logInfo('Building program with Anchor --verifiable flag...');
+  logInfo('This uses Docker to ensure reproducible builds matching OtterSec environment');
+  logInfo('Using Cargo.lock for reproducible builds (automatically used by anchor build --verifiable)');
+  logInfo('Important: Cargo.lock must be committed to repo for OtterSec verification');
+  logWarning('Make sure Docker is running and DNS is configured (check ~/.docker/daemon.json)');
   
   try {
     const env = {
       ...process.env,
       ANCHOR_PROVIDER_URL: MAINNET_RPC,
     };
-    // Use --locked flag for reproducible builds (as per Solana docs)
-    execSync('anchor build --locked', {
+    // anchor build --verifiable uses Docker to build in the same environment as OtterSec
+    // This ensures the deployed binary matches what OtterSec will build from the repo
+    // The hash must match for verification to succeed
+    execSync('anchor build --verifiable', {
       stdio: 'inherit',
       cwd: __dirname,
       env: env
     });
-    logSuccess('Build completed successfully');
+    logSuccess('Verifiable build completed successfully');
   } catch (error) {
-    logError('Build failed');
+    logError('Verifiable build failed');
+    logError('This might be due to:');
+    logError('1. Docker not running');
+    logError('2. Network/DNS issues in Docker (check ~/.docker/daemon.json)');
+    logError('3. Docker daemon needs restart after DNS config changes');
     throw error;
   }
   
-  // Check if .so file exists
-  const soPath = path.join(__dirname, 'target', 'deploy', 'test_program.so');
+  // Check if .so file exists (verifiable build creates it in target/verifiable/)
+  const soPath = path.join(__dirname, 'target', 'verifiable', 'test_program.so');
   if (!fs.existsSync(soPath)) {
-    logError(`Program binary not found at: ${soPath}`);
-    throw new Error('Program binary not found');
+    logError(`Verifiable program binary not found at: ${soPath}`);
+    throw new Error('Verifiable program binary not found');
   }
   
   const stats = fs.statSync(soPath);
   const sizeKB = (stats.size / 1024).toFixed(2);
   logInfo(`Program size: ${sizeKB} KB`);
+  
+  // Calculate SHA256 hash for verification
+  const crypto = require('crypto');
+  const fileBuffer = fs.readFileSync(soPath);
+  const hashSum = crypto.createHash('sha256');
+  hashSum.update(fileBuffer);
+  const hex = hashSum.digest('hex');
+  logInfo(`SHA256 hash: ${hex}`);
+  logInfo('This hash must match OtterSec build for verification to succeed');
   
   return soPath;
 }
@@ -141,7 +159,7 @@ async function buildProgram() {
 async function deployProgram(connection, deployerKeypair, programKeypair) {
   logSection('Deploying Program to Mainnet');
   
-  const soPath = path.join(__dirname, 'target', 'deploy', 'test_program.so');
+  const soPath = path.join(__dirname, 'target', 'verifiable', 'test_program.so');
   
   logInfo('Deploying program...');
   logInfo(`Using RPC: ${MAINNET_RPC}`);
@@ -156,8 +174,12 @@ async function deployProgram(connection, deployerKeypair, programKeypair) {
     };
     
     // Use solana program deploy with explicit RPC URL
+    // Based on official Solana documentation for verified builds
+    // --with-compute-unit-price 50000: recommended low-priority fee
+    // --max-sign-attempts 100: retry attempts for signing
+    // --use-rpc: use RPC for transaction submission
     execSync(
-      `solana program deploy --program-id ${PROGRAM_KEYPAIR_PATH} --keypair ${DEPLOYER_KEYPAIR_PATH} --url "${MAINNET_RPC}" --use-rpc --commitment confirmed ${soPath}`,
+      `solana program deploy -u "${MAINNET_RPC}" ${soPath} --program-id ${PROGRAM_KEYPAIR_PATH} --keypair ${DEPLOYER_KEYPAIR_PATH} --with-compute-unit-price 50000 --max-sign-attempts 100 --use-rpc --commitment confirmed`,
       {
         stdio: 'inherit',
         cwd: __dirname,
