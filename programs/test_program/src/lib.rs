@@ -27,6 +27,13 @@ pub mod test_program {
         msg!("Multiplying {} * {} = {}", a, b, result);
         Ok(result)
     }
+    
+    /// Get maximum of two numbers
+    pub fn max(ctx: Context<Add>, a: u64, b: u64) -> Result<u64> {
+        let result = a.max(b);
+        msg!("Maximum of {} and {} is {}", a, b, result);
+        Ok(result)
+    }
 }
 
 #[derive(Accounts)]
